@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import type { PlaceholderTopic } from "@/lib/placeholders";
+import type { TopicCard } from "@/server/data/learning";
 
-export function TopicGrid({ topics }: { topics: PlaceholderTopic[] }) {
+export function TopicGrid({ topics }: { topics: TopicCard[] }) {
   return (
     <section className="grid gap-5 lg:grid-cols-2">
       {topics.map((topic) => (
@@ -19,8 +19,8 @@ export function TopicGrid({ topics }: { topics: PlaceholderTopic[] }) {
                 {topic.title}
               </h2>
             </div>
-            <span className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-              {topic.audios.length} audios
+              <span className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+                {topic.audioCount} audios
             </span>
           </div>
 

@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import type { PlaceholderTopic } from "@/lib/placeholders";
+import type { TopicDetail } from "@/server/data/learning";
 
-export function AudioList({ topic }: { topic: PlaceholderTopic }) {
+export function AudioList({ topic }: { topic: TopicDetail }) {
   return (
     <section className="grid gap-5 lg:grid-cols-2">
       {topic.audios.map((audio, index) => (
@@ -26,8 +26,8 @@ export function AudioList({ topic }: { topic: PlaceholderTopic }) {
             {audio.description}
           </p>
 
-          <div className="mt-6 rounded-[22px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] p-4 text-sm text-[var(--muted)]">
-            {audio.questions.length} comprehension questions are attached to this audio in the same shape as the database schema.
+            <div className="mt-6 rounded-[22px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] p-4 text-sm text-[var(--muted)]">
+              {audio.questionCount} comprehension questions are attached to this audio in the database.
           </div>
 
           <Link

@@ -1,7 +1,9 @@
 import { TopicGrid } from "@/components/topics/topic-grid";
-import { placeholderTopics } from "@/lib/placeholders";
+import { getTopicCatalog } from "@/server/data/learning";
 
-export default function TopicsPage() {
+export default async function TopicsPage() {
+  const topics = await getTopicCatalog();
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
       <section className="flex flex-col gap-4 rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-8 shadow-[0_24px_80px_rgba(13,34,66,0.08)]">
@@ -12,11 +14,11 @@ export default function TopicsPage() {
           Grammar-first listening tracks for focused English practice.
         </h1>
         <p className="max-w-2xl text-sm leading-7 text-[var(--muted)] sm:text-base">
-          This route is ready for database-driven topic discovery. Right now it uses placeholder data shaped like the Prisma models so we can build features on top of it safely.
+          This route now reads from PostgreSQL through Prisma, so topics here reflect the real catalog configured for students.
         </p>
       </section>
 
-      <TopicGrid topics={placeholderTopics} />
+      <TopicGrid topics={topics} />
     </main>
   );
 }

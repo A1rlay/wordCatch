@@ -1,9 +1,9 @@
-import type { PlaceholderQuestion } from "@/lib/placeholders";
+import type { QuizQuestion } from "@/server/data/learning";
 
 export function QuizBlueprint({
   questions,
 }: {
-  questions: PlaceholderQuestion[];
+  questions: QuizQuestion[];
 }) {
   return (
     <aside className="glass-panel rounded-[32px] border border-[var(--border)] p-8 shadow-[0_24px_80px_rgba(13,34,66,0.08)]">

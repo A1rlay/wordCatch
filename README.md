@@ -52,6 +52,6 @@ Copy `.env.example` to `.env` and update `DATABASE_URL` for your PostgreSQL inst
 
 ## Notes
 
-- UI routes currently use placeholder data so the app works before a database is connected.
-- Backend routers are already set up for real Prisma queries.
-- The next steps are wiring topic/audio pages to tRPC, adding the player, and opening the quiz modal when the playback checkpoint is reached.
+- Topic and audio routes now read from PostgreSQL through Prisma.
+- tRPC routers are ready for frontend consumption and already mirror the core topic/audio lookup flow.
+- The next steps are adding the real player, opening the quiz modal at the playback checkpoint, and submitting answers/results.

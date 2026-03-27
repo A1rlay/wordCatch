@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { QuizBlueprint } from "@/components/audio/quiz-blueprint";
-import { placeholderTopics } from "@/lib/placeholders";
+import { getAudioLessonBySlug } from "@/server/data/learning";
 
 type AudioPageProps = {
   params: Promise<{ audioSlug: string; topicSlug: string }>;
@@ -10,20 +10,19 @@ type AudioPageProps = {
 
 export default async function AudioPage({ params }: AudioPageProps) {
   const { audioSlug, topicSlug } = await params;
-  const topic = placeholderTopics.find((entry) => entry.slug === topicSlug);
-  const audio = topic?.audios.find((entry) => entry.slug === audioSlug);
+  const audio = await getAudioLessonBySlug(topicSlug, audioSlug);
 
-  if (!topic || !audio) {
+  if (!audio) {
     notFound();
   }
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
       <Link
-        href={`/topics/${topic.slug}`}
+        href={`/topics/${audio.topic.slug}`}
         className="w-fit text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
       >
-        Back to {topic.title}
+        Back to {audio.topic.title}
       </Link>
 
       <section className="grid gap-5 lg:grid-cols-[1.3fr_0.92fr]">

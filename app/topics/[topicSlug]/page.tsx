@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { AudioList } from "@/components/audio/audio-list";
-import { placeholderTopics } from "@/lib/placeholders";
+import { getTopicBySlug } from "@/server/data/learning";
 
 type TopicPageProps = {
   params: Promise<{ topicSlug: string }>;
@@ -9,7 +9,7 @@ type TopicPageProps = {
 
 export default async function TopicPage({ params }: TopicPageProps) {
   const { topicSlug } = await params;
-  const topic = placeholderTopics.find((entry) => entry.slug === topicSlug);
+  const topic = await getTopicBySlug(topicSlug);
 
   if (!topic) {
     notFound();
