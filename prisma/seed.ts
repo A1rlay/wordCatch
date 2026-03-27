@@ -204,7 +204,7 @@ async function main() {
             options: {
               create: [
                 { order: 1, text: "A dog" },
-                { isCorrect: true, order: 2, text: "A bicycle" },
+                { isCorrect: true, order: 2, text: "A bicycle helmet" },
                 { order: 3, text: "A newspaper" },
                 { order: 4, text: "An umbrella" },
               ],
