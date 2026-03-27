@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fcfaf5;
+  --foreground: #13233f;
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-strong: #f4ede1;
+  --panel: linear-gradient(135deg, #fff7ea 0%, #eef6ff 100%);
+  --muted: #53627b;
+  --accent: #c86d3d;
+  --border: rgba(19, 35, 63, 0.1);
+  --border-strong: rgba(19, 35, 63, 0.2);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope);
+  --font-serif: var(--font-cormorant);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-image:
+    radial-gradient(circle at top left, rgba(200, 109, 61, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(73, 136, 209, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent 24%);
+  font-family: var(--font-sans), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(200, 109, 61, 0.24);
+}
+
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: blur(18px);
 }
