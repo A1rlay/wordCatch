@@ -92,6 +92,7 @@ export type AudioLesson = {
   checkpointLabel: string;
   checkpointSeconds: number;
   description: string | null;
+  durationSeconds: number | null;
   questions: QuizQuestion[];
   slug: string;
   title: string;
@@ -161,6 +162,7 @@ function mapAudioLesson(audio: AudioLessonRecord): AudioLesson {
     checkpointLabel: formatCheckpointLabel(audio.checkpointSeconds),
     checkpointSeconds: audio.checkpointSeconds,
     description: audio.description,
+    durationSeconds: audio.durationSeconds,
     questions: audio.questions.map((question) => ({
       id: question.id,
       options: question.options.map((option) => ({
