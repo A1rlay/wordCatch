@@ -12,6 +12,9 @@ const sans = Manrope({
 export const metadata: Metadata = {
   title: "WordCatch",
   description: "English listening practice with grammar topics and quiz checkpoints.",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

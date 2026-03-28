@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center">
       <p className="text-sm font-bold uppercase tracking-[0.32em] text-[rgba(255,255,255,0.55)]">
-        English Practice
+        Ingles Practico
       </p>
       <h1 className="mt-3 text-6xl font-extrabold tracking-tight text-white sm:text-7xl">
         WordCatch
