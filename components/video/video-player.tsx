@@ -57,6 +57,13 @@ function formatTime(seconds: number) {
 type PlayerPhase = "idle" | "playing" | "paused" | "checkpoint" | "done";
 type QuizPhase = "answering" | "submitting" | "result";
 
+type SessionResult = {
+  correct: boolean;
+  correctOptionId: string | null;
+  question: QuizQuestion;
+  selectedOptionId: string;
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function VideoPlayer({ video }: { video: VideoLesson }) {
@@ -74,6 +81,8 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
   const [activeQuestion, setActiveQuestion] = useState<QuizQuestion | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [result, setResult] = useState<SingleAnswerResult | null>(null);
+  // Accumulates one entry per question (keyed by question id, last answer wins on re-watch)
+  const [sessionResults, setSessionResults] = useState<Map<string, SessionResult>>(new Map());
 
   // Sort questions by checkpointSeconds so they trigger in chronological order
   const sortedQuestions = useMemo(
@@ -194,6 +203,17 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
         onSuccess: (data) => {
           setResult(data);
           setQuizPhase("result");
+          // Record result for end-of-video summary (last answer wins on re-watch)
+          setSessionResults((prev) => {
+            const next = new Map(prev);
+            next.set(activeQuestion.id, {
+              correct: data.correct,
+              correctOptionId: data.correctOptionId,
+              question: activeQuestion,
+              selectedOptionId: selectedOptionId,
+            });
+            return next;
+          });
         },
         onError: () => setQuizPhase("answering"),
       },
@@ -208,8 +228,17 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
   const progressPct =
     duration && duration > 0 ? Math.min(100, (currentTime / duration) * 100) : null;
 
-  const completedCount = nextCheckpointIdxRef.current;
+  const completedCount = sessionResults.size;
   const totalQuestions = sortedQuestions.length;
+
+  // Summary derived from sessionResults (sorted by question order)
+  const summaryResults = useMemo(
+    () =>
+      [...sessionResults.values()].sort((a, b) => a.question.order - b.question.order),
+    [sessionResults],
+  );
+  const correctCount = summaryResults.filter((r) => r.correct).length;
+  const wrongCount = summaryResults.filter((r) => !r.correct).length;
 
   if (!videoId) {
     return (
@@ -376,6 +405,83 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
                   </button>
                 </div>
               </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* End-of-video summary modal */}
+      {playerPhase === "done" && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-8 shadow-[0_24px_80px_rgba(13,34,66,0.18)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+              Lesson complete
+            </p>
+            <h2 className="mt-3 font-serif text-3xl text-[var(--foreground)]">
+              {video.title}
+            </h2>
+
+            {summaryResults.length > 0 ? (
+              <>
+                {/* Score summary */}
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="rounded-[20px] border border-green-200 bg-green-50 p-4 text-center">
+                    <p className="font-serif text-4xl text-green-700">{correctCount}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-green-600">
+                      Correct
+                    </p>
+                  </div>
+                  <div className="rounded-[20px] border border-red-200 bg-red-50 p-4 text-center">
+                    <p className="font-serif text-4xl text-red-600">{wrongCount}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-500">
+                      Wrong
+                    </p>
+                  </div>
+                </div>
+
+                {/* Per-question breakdown */}
+                <div className="mt-6 space-y-4">
+                  {summaryResults.map(({ correct, correctOptionId, question, selectedOptionId: chosen }) => (
+                    <div
+                      key={question.id}
+                      className={`rounded-[20px] border p-5 ${
+                        correct ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+                      }`}
+                    >
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+                        Question {question.order}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-[var(--foreground)]">
+                        {question.prompt}
+                      </p>
+                      <div className="mt-3 space-y-1.5">
+                        {question.options.map((option) => {
+                          const isSelected = chosen === option.id;
+                          const isCorrect = correctOptionId === option.id;
+                          return (
+                            <div
+                              key={option.id}
+                              className={`rounded-full border px-4 py-2 text-sm ${
+                                isCorrect
+                                  ? "border-green-400 bg-green-100 text-green-800"
+                                  : isSelected
+                                    ? "border-red-400 bg-red-100 text-red-700 line-through"
+                                    : "border-transparent text-[var(--muted)]"
+                              }`}
+                            >
+                              {option.text}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="mt-4 text-sm text-[var(--muted)]">
+                No questions were answered during this session.
+              </p>
             )}
           </div>
         </div>
