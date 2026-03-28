@@ -25,7 +25,6 @@ model Video {
   title           String
   description     String?
   videoUrl        String
-  transcript      String?
   order           Int        @default(0)
   topic           Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
   questions       Question[]

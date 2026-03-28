@@ -36,8 +36,6 @@ async function main() {
       order: 1,
       title: "Weekend Memory",
       topicId: topicPast.id,
-      transcript:
-        "Ana and Miguel were at the library on Saturday morning. Later, Ana was excited about a trip, and Miguel had an old photo in his backpack.",
       questions: {
         create: [
           {
@@ -105,8 +103,6 @@ async function main() {
       order: 2,
       title: "School Event Recap",
       topicId: topicPast.id,
-      transcript:
-        "The principal was in the gym, the banner was red, four teachers were near the entrance, and there was a microphone on the stage.",
       questions: {
         create: [
           {
@@ -174,8 +170,6 @@ async function main() {
       order: 1,
       title: "Busy City Morning",
       topicId: topicPresent.id,
-      transcript:
-        "A tourist is reading a map, a boy is carrying a bicycle helmet, musicians are playing at the market, and people are opening umbrellas because it is raining.",
       questions: {
         create: [
           {

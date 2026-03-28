@@ -60,7 +60,6 @@ export function VideoFields({
     description?: string | null;
     order?: number;
     title?: string;
-    transcript?: string | null;
     videoUrl?: string;
   };
 } = {}) {
@@ -86,13 +85,6 @@ export function VideoFields({
         name="description"
         defaultValue={defaults?.description ?? ""}
         multiline
-      />
-      <Field
-        label="Transcript"
-        name="transcript"
-        defaultValue={defaults?.transcript ?? ""}
-        multiline
-        hint="Optional — full transcript text"
       />
     </>
   );

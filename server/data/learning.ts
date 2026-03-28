@@ -95,7 +95,6 @@ export type VideoLesson = {
     id: string;
     title: string;
   };
-  transcript: string | null;
   videoUrl: string;
 };
 
@@ -149,7 +148,6 @@ function mapVideoLesson(video: VideoLessonRecord): VideoLesson {
       id: video.topic.id,
       title: video.topic.title,
     },
-    transcript: video.transcript,
     videoUrl: video.videoUrl,
   };
 }

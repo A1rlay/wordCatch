@@ -1,0 +1,1 @@
+ALTER TABLE "Video" DROP COLUMN IF EXISTS "transcript";

@@ -74,7 +74,6 @@ export async function adminCreateVideo(data: {
   order: number;
   title: string;
   topicId: string;
-  transcript: string;
   videoUrl: string;
 }) {
   return prisma.video.create({ data });
@@ -86,7 +85,6 @@ export async function adminUpdateVideo(
     description: string;
     order: number;
     title: string;
-    transcript: string;
     videoUrl: string;
   },
 ) {

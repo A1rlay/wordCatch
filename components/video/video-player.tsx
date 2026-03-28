@@ -89,6 +89,11 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
   const [muted, setMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // coverActive: true = dark overlay visible (hides YouTube UI); false = transparent (video shows through)
+  // Starts true so YouTube's initial load state is never visible.
+  // Set immediately on click so there's no flash waiting for YouTube's async state event.
+  const [coverActive, setCoverActive] = useState(true);
+
   const sortedQuestions = useMemo(
     () => [...video.questions].sort((a, b) => a.checkpointSeconds - b.checkpointSeconds),
     [video.questions],
@@ -168,12 +173,15 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
           onStateChange: (e) => {
             const YTState = window.YT.PlayerState;
             if (e.data === YTState.PLAYING) {
+              setCoverActive(false);
               setPhase("playing");
               startPolling();
             } else if (e.data === YTState.PAUSED) {
+              setCoverActive(true);
               stopPolling();
               if (playerPhaseRef.current !== "checkpoint") setPhase("paused");
             } else if (e.data === YTState.ENDED) {
+              setCoverActive(true);
               stopPolling();
               setPhase("done");
             }
@@ -304,18 +312,22 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
           {/* iframe */}
           <div ref={containerRef} className="absolute inset-0 h-full w-full" />
 
-          {/* Transparent overlay — blocks all YouTube UI (title, share, more videos, logo) */}
+          {/* Overlay — dark when cover is active (hides all YouTube UI), transparent when playing */}
           <div
-            className="absolute inset-0 z-10 flex items-center justify-center"
+            className={`absolute inset-0 z-10 flex cursor-pointer items-center justify-center transition-colors duration-100 ${
+              coverActive ? "bg-black/80" : "bg-transparent"
+            }`}
             onClick={() => {
               if (playerPhase === "playing") {
+                setCoverActive(true);   // instant cover before YouTube shows pause UI
                 playerRef.current?.pauseVideo();
               } else if (playerPhase === "paused" || playerPhase === "idle") {
                 playerRef.current?.playVideo();
+                // coverActive set to false in onStateChange(PLAYING)
               }
             }}
           >
-            {(playerPhase === "idle" || playerPhase === "paused") && (
+            {coverActive && playerPhase !== "checkpoint" && (
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-transform hover:scale-105">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
                   <path d="M8 5v14l11-7z" />

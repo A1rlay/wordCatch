@@ -13,17 +13,9 @@ export async function createVideoAction(topicId: string, formData: FormData) {
   const title = formData.get("title")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const videoUrl = formData.get("videoUrl")?.toString().trim() ?? "";
-  const transcript = formData.get("transcript")?.toString().trim() ?? "";
   const order = parseInt(formData.get("order")?.toString() ?? "0", 10);
 
-  await adminCreateVideo({
-    description,
-    order,
-    title,
-    topicId,
-    transcript,
-    videoUrl,
-  });
+  await adminCreateVideo({ description, order, title, topicId, videoUrl });
 
   revalidatePath(`/admin/topics/${topicId}/videos`);
   redirect(`/admin/topics/${topicId}/videos`);
@@ -37,16 +29,9 @@ export async function updateVideoAction(
   const title = formData.get("title")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const videoUrl = formData.get("videoUrl")?.toString().trim() ?? "";
-  const transcript = formData.get("transcript")?.toString().trim() ?? "";
   const order = parseInt(formData.get("order")?.toString() ?? "0", 10);
 
-  await adminUpdateVideo(videoId, {
-    description,
-    order,
-    title,
-    transcript,
-    videoUrl,
-  });
+  await adminUpdateVideo(videoId, { description, order, title, videoUrl });
 
   revalidatePath(`/admin/topics/${topicId}/videos`);
   redirect(`/admin/topics/${topicId}/videos`);
