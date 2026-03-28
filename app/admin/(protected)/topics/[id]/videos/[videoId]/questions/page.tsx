@@ -26,7 +26,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
         </div>
         <Link
           href={`/admin/topics/${id}/videos/${videoId}/questions/new`}
-          className="rounded-full bg-[var(--foreground)] px-5 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
+          className="rounded-full bg-[#0F9C00] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
         >
           New question
         </Link>
@@ -66,7 +66,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
                 <div className="flex shrink-0 items-center gap-2">
                   <Link
                     href={`/admin/topics/${id}/videos/${videoId}/questions/${question.id}/edit`}
-                    className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-[var(--muted)] transition-colors hover:border-[var(--foreground)] hover:text-[var(--foreground)]"
+                    className="rounded-full border border-[rgba(255,255,255,0.25)] px-4 py-2 text-xs font-semibold text-[rgba(255,255,255,0.7)] transition-colors hover:border-white hover:text-white"
                   >
                     Edit
                   </Link>

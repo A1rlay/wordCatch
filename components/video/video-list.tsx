@@ -3,36 +3,26 @@ import Link from "next/link";
 import type { TopicDetail } from "@/server/data/learning";
 
 export function VideoList({ topic }: { topic: TopicDetail }) {
+  if (topic.videos.length === 0) {
+    return (
+      <p className="text-sm text-[rgba(255,255,255,0.55)]">No videos yet.</p>
+    );
+  }
+
   return (
-    <section className="grid gap-5 lg:grid-cols-2">
+    <div className="flex flex-col gap-3">
       {topic.videos.map((video, index) => (
-        <article
+        <Link
           key={video.slug}
-          className="glass-panel rounded-[30px] border border-[var(--border)] p-7 shadow-[0_20px_60px_rgba(13,34,66,0.08)]"
+          href={`/topics/${topic.slug}/videos/${video.slug}`}
+          className="flex items-center justify-between rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.1)] px-6 py-5 font-bold text-white backdrop-blur-sm transition-colors hover:bg-[rgba(255,255,255,0.18)]"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
-            Video {index + 1}
-          </p>
-
-          <h2 className="mt-4 font-serif text-3xl text-[var(--foreground)]">
-            {video.title}
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-            {video.description}
-          </p>
-
-          <div className="mt-6 rounded-[22px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] p-4 text-sm text-[var(--muted)]">
-            {video.questionCount} comprehension questions attached.
-          </div>
-
-          <Link
-            href={`/topics/${topic.slug}/videos/${video.slug}`}
-            className="mt-6 inline-flex rounded-full bg-[var(--foreground)] px-5 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
-          >
-            Open video lesson
-          </Link>
-        </article>
+          <span className="text-base">{video.title}</span>
+          <span className="ml-4 shrink-0 rounded-full border border-[rgba(255,255,255,0.25)] px-3 py-1 text-xs font-semibold text-[rgba(255,255,255,0.7)]">
+            {index + 1}
+          </span>
+        </Link>
       ))}
-    </section>
+    </div>
   );
 }

@@ -40,7 +40,7 @@ export default async function AdminLayout({
           <form action={logoutAction}>
             <button
               type="submit"
-              className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-[var(--muted)] transition-colors hover:border-[var(--foreground)] hover:text-[var(--foreground)]"
+              className="rounded-full border border-[rgba(255,255,255,0.25)] px-4 py-2 text-xs font-semibold text-[rgba(255,255,255,0.7)] transition-colors hover:border-white hover:text-white"
             >
               Sign out
             </button>

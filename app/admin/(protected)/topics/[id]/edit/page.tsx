@@ -34,7 +34,7 @@ export default async function EditTopicPage({ params }: EditTopicPageProps) {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
+            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
             Save changes
           </button>

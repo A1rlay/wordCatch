@@ -39,7 +39,7 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
+            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
             Save changes
           </button>
@@ -64,7 +64,7 @@ export function QuestionFields({
     defaults?.options?.find((o) => o.isCorrect)?.order ?? 1;
 
   const inputClass =
-    "rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]";
+    "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
 
   return (
     <>
@@ -145,7 +145,7 @@ export function QuestionFields({
                 defaultValue={opt?.text}
                 placeholder={`Option ${n}`}
                 required
-                className="flex-1 rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-2.5 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                className="flex-1 rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-2.5 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white"
               />
             </div>
           );

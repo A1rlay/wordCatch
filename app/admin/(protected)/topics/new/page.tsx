@@ -20,7 +20,7 @@ export default function NewTopicPage() {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
+            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
             Create topic
           </button>
@@ -89,7 +89,7 @@ function Field({
   required?: boolean;
 }) {
   const inputClass =
-    "rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]";
+    "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
 
   return (
     <div className="flex flex-col gap-1.5">

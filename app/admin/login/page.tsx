@@ -4,65 +4,43 @@ type LoginPageProps = {
   searchParams: Promise<{ error?: string }>;
 };
 
+const inputClass =
+  "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
+
 export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   const { error } = await searchParams;
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-8 shadow-[0_24px_80px_rgba(13,34,66,0.08)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+        <div className="rounded-3xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.08)] p-8 backdrop-blur-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#0F9C00]">
             Admin
           </p>
-          <h1 className="mt-3 font-serif text-3xl text-[var(--foreground)]">
-            Sign in
-          </h1>
+          <h1 className="mt-2 text-3xl font-extrabold text-white">Sign in</h1>
 
           {error && (
-            <p className="mt-4 rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p className="mt-4 rounded-xl border border-red-400/40 bg-red-500/20 px-4 py-3 text-sm text-red-300">
               Incorrect email or password.
             </p>
           )}
 
           <form action={loginAction} className="mt-6 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="email"
-                className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
-              >
+              <label htmlFor="email" className="text-xs font-bold uppercase tracking-[0.22em] text-[rgba(255,255,255,0.55)]">
                 Email
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                className="rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)] focus:ring-0"
-              />
+              <input id="email" name="email" type="email" required autoComplete="email" className={inputClass} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="password"
-                className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
-              >
+              <label htmlFor="password" className="text-xs font-bold uppercase tracking-[0.22em] text-[rgba(255,255,255,0.55)]">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                className="rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)] focus:ring-0"
-              />
+              <input id="password" name="password" type="password" required autoComplete="current-password" className={inputClass} />
             </div>
 
-            <button
-              type="submit"
-              className="mt-2 rounded-full bg-[var(--foreground)] py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
-            >
+            <button type="submit" className="mt-2 rounded-full bg-[#0F9C00] py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
               Sign in
             </button>
           </form>
