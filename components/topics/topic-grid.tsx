@@ -13,8 +13,8 @@ export function TopicGrid({ topics }: { topics: TopicCard[] }) {
     <div className="flex flex-col gap-3">
       {topics.map((topic) => (
         <Link
-          key={topic.slug}
-          href={`/topics/${topic.slug}`}
+          key={topic.id}
+          href={`/topics/${topic.id}`}
           className="flex items-center justify-between rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.1)] px-6 py-5 font-bold text-white backdrop-blur-sm transition-colors hover:bg-[rgba(255,255,255,0.18)]"
         >
           <span className="text-base">{topic.title}</span>

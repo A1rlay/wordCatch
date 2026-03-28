@@ -18,24 +18,22 @@ function parseTags(raw: string): string[] {
 
 export async function createTopicAction(formData: FormData) {
   const title = formData.get("title")?.toString().trim() ?? "";
-  const slug = formData.get("slug")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const level = formData.get("level")?.toString().trim() ?? "";
   const tags = parseTags(formData.get("tags")?.toString() ?? "");
 
-  await adminCreateTopic({ title, slug, description, level, tags });
+  await adminCreateTopic({ title, description, level, tags });
   revalidatePath("/admin/topics");
   redirect("/admin/topics");
 }
 
 export async function updateTopicAction(id: string, formData: FormData) {
   const title = formData.get("title")?.toString().trim() ?? "";
-  const slug = formData.get("slug")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const level = formData.get("level")?.toString().trim() ?? "";
   const tags = parseTags(formData.get("tags")?.toString() ?? "");
 
-  await adminUpdateTopic(id, { title, slug, description, level, tags });
+  await adminUpdateTopic(id, { title, description, level, tags });
   revalidatePath("/admin/topics");
   redirect("/admin/topics");
 }

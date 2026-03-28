@@ -11,7 +11,6 @@ import {
 
 export async function createVideoAction(topicId: string, formData: FormData) {
   const title = formData.get("title")?.toString().trim() ?? "";
-  const slug = formData.get("slug")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const videoUrl = formData.get("videoUrl")?.toString().trim() ?? "";
   const transcript = formData.get("transcript")?.toString().trim() ?? "";
@@ -20,7 +19,6 @@ export async function createVideoAction(topicId: string, formData: FormData) {
   await adminCreateVideo({
     description,
     order,
-    slug,
     title,
     topicId,
     transcript,
@@ -37,7 +35,6 @@ export async function updateVideoAction(
   formData: FormData,
 ) {
   const title = formData.get("title")?.toString().trim() ?? "";
-  const slug = formData.get("slug")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const videoUrl = formData.get("videoUrl")?.toString().trim() ?? "";
   const transcript = formData.get("transcript")?.toString().trim() ?? "";
@@ -46,7 +43,6 @@ export async function updateVideoAction(
   await adminUpdateVideo(videoId, {
     description,
     order,
-    slug,
     title,
     transcript,
     videoUrl,

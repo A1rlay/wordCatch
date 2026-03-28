@@ -44,8 +44,7 @@ export default async function AdminTopicsPage() {
                   {topic.title}
                 </p>
                 <p className="mt-0.5 text-xs text-[var(--muted)]">
-                  {topic._count.videos} video{topic._count.videos !== 1 ? "s" : ""} ·{" "}
-                  slug: {topic.slug}
+                  {topic._count.videos} video{topic._count.videos !== 1 ? "s" : ""}
                 </p>
               </div>
               <div className="flex items-center gap-2">

@@ -1,33 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import {
-  getTopicBySlug,
-  getVideoLessonBySlug,
-  submitSingleAnswer,
-} from "@/server/data/learning";
+import { getVideoLessonById, submitSingleAnswer } from "@/server/data/learning";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
 export const videoRouter = createTRPCRouter({
-  bySlug: publicProcedure
-    .input(
-      z.object({
-        topicSlug: z.string().min(1),
-        videoSlug: z.string().min(1),
-      }),
-    )
-    .query(({ input }) => getVideoLessonBySlug(input.topicSlug, input.videoSlug)),
-
-  listByTopic: publicProcedure
-    .input(
-      z.object({
-        topicSlug: z.string().min(1),
-      }),
-    )
-    .query(async ({ input }) => {
-      const topic = await getTopicBySlug(input.topicSlug);
-      return topic?.videos ?? [];
-    }),
+  byId: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(({ input }) => getVideoLessonById(input.id)),
 
   submitAnswer: publicProcedure
     .input(

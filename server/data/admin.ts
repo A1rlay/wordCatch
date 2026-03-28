@@ -30,7 +30,6 @@ export async function adminGetTopic(id: string) {
 export async function adminCreateTopic(data: {
   description: string;
   level: string;
-  slug: string;
   tags: string[];
   title: string;
 }) {
@@ -42,7 +41,6 @@ export async function adminUpdateTopic(
   data: {
     description: string;
     level: string;
-    slug: string;
     tags: string[];
     title: string;
   },
@@ -74,7 +72,6 @@ export async function adminGetVideo(id: string) {
 export async function adminCreateVideo(data: {
   description: string;
   order: number;
-  slug: string;
   title: string;
   topicId: string;
   transcript: string;
@@ -88,7 +85,6 @@ export async function adminUpdateVideo(
   data: {
     description: string;
     order: number;
-    slug: string;
     title: string;
     transcript: string;
     videoUrl: string;

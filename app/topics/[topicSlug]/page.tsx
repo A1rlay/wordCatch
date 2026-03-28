@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { VideoList } from "@/components/video/video-list";
-import { getTopicBySlug } from "@/server/data/learning";
+import { getTopicById } from "@/server/data/learning";
 
 type TopicPageProps = {
   params: Promise<{ topicSlug: string }>;
@@ -10,7 +10,7 @@ type TopicPageProps = {
 
 export default async function TopicPage({ params }: TopicPageProps) {
   const { topicSlug } = await params;
-  const topic = await getTopicBySlug(topicSlug);
+  const topic = await getTopicById(topicSlug);
 
   if (!topic) notFound();
 

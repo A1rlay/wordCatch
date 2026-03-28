@@ -49,7 +49,6 @@ export function VideoFields({
   defaults?: {
     description?: string | null;
     order?: number;
-    slug?: string;
     title?: string;
     transcript?: string | null;
     videoUrl?: string;
@@ -58,13 +57,6 @@ export function VideoFields({
   return (
     <>
       <Field label="Title" name="title" defaultValue={defaults?.title} required />
-      <Field
-        label="Slug"
-        name="slug"
-        defaultValue={defaults?.slug}
-        hint="URL-safe identifier, e.g. weekend-memory"
-        required
-      />
       <Field
         label="YouTube URL"
         name="videoUrl"

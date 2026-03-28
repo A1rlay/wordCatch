@@ -13,8 +13,8 @@ export function VideoList({ topic }: { topic: TopicDetail }) {
     <div className="flex flex-col gap-3">
       {topic.videos.map((video, index) => (
         <Link
-          key={video.slug}
-          href={`/topics/${topic.slug}/videos/${video.slug}`}
+          key={video.id}
+          href={`/topics/${topic.id}/videos/${video.id}`}
           className="flex items-center justify-between rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.1)] px-6 py-5 font-bold text-white backdrop-blur-sm transition-colors hover:bg-[rgba(255,255,255,0.18)]"
         >
           <span className="text-base">{video.title}</span>

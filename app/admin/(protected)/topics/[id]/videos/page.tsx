@@ -47,7 +47,7 @@ export default async function TopicVideosPage({ params }: TopicVideosPageProps) 
                 <p className="font-semibold text-[var(--foreground)]">{video.title}</p>
                 <p className="mt-0.5 text-xs text-[var(--muted)]">
                   {video._count.questions} question
-                  {video._count.questions !== 1 ? "s" : ""} · slug: {video.slug}
+                  {video._count.questions !== 1 ? "s" : ""}
                 </p>
               </div>
               <div className="flex items-center gap-2">

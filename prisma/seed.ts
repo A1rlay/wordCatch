@@ -8,35 +8,25 @@ async function main() {
   await prisma.video.deleteMany();
   await prisma.topic.deleteMany();
 
-  await prisma.topic.createMany({
-    data: [
-      {
-        description:
-          "Introduce students to past descriptions with was and were through short stories and school-life conversations.",
-        level: "A1 - A2",
-        slug: "verb-to-be-in-past",
-        tags: ["was", "were", "past descriptions"],
-        title: "Verb To Be in Past",
-      },
-      {
-        description:
-          "Help students recognize actions happening right now using rich present continuous listening scenes.",
-        level: "A1 - A2",
-        slug: "present-continuous",
-        tags: ["actions now", "ing forms", "describing scenes"],
-        title: "Present Continuous",
-      },
-    ],
-  });
-
-  const topics = await prisma.topic.findMany({
-    select: {
-      id: true,
-      slug: true,
+  const topicPast = await prisma.topic.create({
+    data: {
+      description:
+        "Introduce students to past descriptions with was and were through short stories and school-life conversations.",
+      level: "A1 - A2",
+      tags: ["was", "were", "past descriptions"],
+      title: "Verb To Be in Past",
     },
   });
 
-  const topicIdBySlug = new Map(topics.map((topic) => [topic.slug, topic.id]));
+  const topicPresent = await prisma.topic.create({
+    data: {
+      description:
+        "Help students recognize actions happening right now using rich present continuous listening scenes.",
+      level: "A1 - A2",
+      tags: ["actions now", "ing forms", "describing scenes"],
+      title: "Present Continuous",
+    },
+  });
 
   await prisma.video.create({
     data: {
@@ -44,9 +34,8 @@ async function main() {
       description:
         "A short story about what two students did last weekend, focused on was and were usage.",
       order: 1,
-      slug: "weekend-memory",
       title: "Weekend Memory",
-      topicId: topicIdBySlug.get("verb-to-be-in-past")!,
+      topicId: topicPast.id,
       transcript:
         "Ana and Miguel were at the library on Saturday morning. Later, Ana was excited about a trip, and Miguel had an old photo in his backpack.",
       questions: {
@@ -114,9 +103,8 @@ async function main() {
       description:
         "A classroom dialogue describing where objects and people were during a school event.",
       order: 2,
-      slug: "school-event-recap",
       title: "School Event Recap",
-      topicId: topicIdBySlug.get("verb-to-be-in-past")!,
+      topicId: topicPast.id,
       transcript:
         "The principal was in the gym, the banner was red, four teachers were near the entrance, and there was a microphone on the stage.",
       questions: {
@@ -184,9 +172,8 @@ async function main() {
       description:
         "A city scene where people are doing different actions right now.",
       order: 1,
-      slug: "busy-city-morning",
       title: "Busy City Morning",
-      topicId: topicIdBySlug.get("present-continuous")!,
+      topicId: topicPresent.id,
       transcript:
         "A tourist is reading a map, a boy is carrying a bicycle helmet, musicians are playing at the market, and people are opening umbrellas because it is raining.",
       questions: {

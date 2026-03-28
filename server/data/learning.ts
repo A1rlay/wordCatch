@@ -53,8 +53,8 @@ type VideoLessonRecord = Prisma.VideoGetPayload<typeof videoLessonArgs>;
 
 export type TopicCard = {
   description: string | null;
+  id: string;
   level: string | null;
-  slug: string;
   tags: string[];
   title: string;
   videoCount: number;
@@ -62,15 +62,15 @@ export type TopicCard = {
 
 export type TopicVideoSummary = {
   description: string | null;
+  id: string;
   questionCount: number;
-  slug: string;
   title: string;
 };
 
 export type TopicDetail = {
   description: string | null;
+  id: string;
   level: string | null;
-  slug: string;
   tags: string[];
   title: string;
   videos: TopicVideoSummary[];
@@ -90,10 +90,9 @@ export type QuizQuestion = {
 export type VideoLesson = {
   description: string | null;
   questions: QuizQuestion[];
-  slug: string;
   title: string;
   topic: {
-    slug: string;
+    id: string;
     title: string;
   };
   transcript: string | null;
@@ -108,8 +107,8 @@ export type SingleAnswerResult = {
 function mapTopicCard(topic: TopicCatalogRecord): TopicCard {
   return {
     description: topic.description,
+    id: topic.id,
     level: topic.level,
-    slug: topic.slug,
     tags: topic.tags,
     title: topic.title,
     videoCount: topic._count.videos,
@@ -119,14 +118,14 @@ function mapTopicCard(topic: TopicCatalogRecord): TopicCard {
 function mapTopicDetail(topic: TopicDetailRecord): TopicDetail {
   return {
     description: topic.description,
+    id: topic.id,
     level: topic.level,
-    slug: topic.slug,
     tags: topic.tags,
     title: topic.title,
     videos: topic.videos.map((video) => ({
       description: video.description,
+      id: video.id,
       questionCount: video._count.questions,
-      slug: video.slug,
       title: video.title,
     })),
   };
@@ -145,10 +144,9 @@ function mapVideoLesson(video: VideoLessonRecord): VideoLesson {
       order: question.order,
       prompt: question.prompt,
     })),
-    slug: video.slug,
     title: video.title,
     topic: {
-      slug: video.topic.slug,
+      id: video.topic.id,
       title: video.topic.title,
     },
     transcript: video.transcript,
@@ -167,26 +165,19 @@ export async function getTopicCatalog() {
   return topics.map(mapTopicCard);
 }
 
-export async function getTopicBySlug(slug: string) {
+export async function getTopicById(id: string) {
   const topic = await prisma.topic.findUnique({
     ...topicDetailArgs,
-    where: {
-      slug,
-    },
+    where: { id },
   });
 
   return topic ? mapTopicDetail(topic) : null;
 }
 
-export async function getVideoLessonBySlug(topicSlug: string, videoSlug: string) {
-  const video = await prisma.video.findFirst({
+export async function getVideoLessonById(videoId: string) {
+  const video = await prisma.video.findUnique({
     ...videoLessonArgs,
-    where: {
-      slug: videoSlug,
-      topic: {
-        slug: topicSlug,
-      },
-    },
+    where: { id: videoId },
   });
 
   return video ? mapVideoLesson(video) : null;

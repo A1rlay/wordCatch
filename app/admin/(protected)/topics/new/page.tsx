@@ -36,7 +36,6 @@ export function TopicFields({
   defaults?: {
     description?: string | null;
     level?: string | null;
-    slug?: string;
     tags?: string[];
     title?: string;
   };
@@ -44,13 +43,6 @@ export function TopicFields({
   return (
     <>
       <Field label="Title" name="title" defaultValue={defaults?.title} required />
-      <Field
-        label="Slug"
-        name="slug"
-        defaultValue={defaults?.slug}
-        hint="URL-safe identifier, e.g. verb-to-be-in-past"
-        required
-      />
       <Field
         label="Level"
         name="level"
