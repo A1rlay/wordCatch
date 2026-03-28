@@ -21,33 +21,32 @@ model Topic {
 }
 
 model Video {
-  id                String     @id @default(cuid())
-  topicId           String
-  slug              String
-  title             String
-  description       String?
-  videoUrl          String
-  transcript        String?
-  checkpointSeconds Int
-  durationSeconds   Int?
-  order             Int        @default(0)
-  topic             Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  questions         Question[]
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  id              String     @id @default(cuid())
+  topicId         String
+  slug            String
+  title           String
+  description     String?
+  videoUrl        String
+  transcript      String?
+  order           Int        @default(0)
+  topic           Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions       Question[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   @@unique([topicId, slug])
 }
 
 model Question {
-  id        String           @id @default(cuid())
-  videoId   String
-  prompt    String
-  order     Int
-  video     Video            @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  options   QuestionOption[]
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id                String           @id @default(cuid())
+  videoId           String
+  prompt            String
+  order             Int
+  checkpointSeconds Int              @default(0)
+  video             Video            @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  options           QuestionOption[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
   @@unique([videoId, order])
 }

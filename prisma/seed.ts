@@ -41,7 +41,6 @@ async function main() {
   await prisma.video.create({
     data: {
       videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      checkpointSeconds: 75,
       description:
         "A short story about what two students did last weekend, focused on was and were usage.",
       order: 1,
@@ -53,6 +52,7 @@ async function main() {
       questions: {
         create: [
           {
+            checkpointSeconds: 30,
             order: 1,
             prompt: "Where were the students on Saturday morning?",
             options: {
@@ -65,6 +65,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 55,
             order: 2,
             prompt: "How was Ana feeling after the trip?",
             options: {
@@ -77,6 +78,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 75,
             order: 3,
             prompt: "What was inside Miguel's backpack?",
             options: {
@@ -89,6 +91,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 90,
             order: 4,
             prompt: "When were they back at home?",
             options: {
@@ -108,7 +111,6 @@ async function main() {
   await prisma.video.create({
     data: {
       videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      checkpointSeconds: 50,
       description:
         "A classroom dialogue describing where objects and people were during a school event.",
       order: 2,
@@ -120,6 +122,7 @@ async function main() {
       questions: {
         create: [
           {
+            checkpointSeconds: 20,
             order: 1,
             prompt: "Where was the principal?",
             options: {
@@ -132,6 +135,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 35,
             order: 2,
             prompt: "What color was the banner?",
             options: {
@@ -144,6 +148,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 50,
             order: 3,
             prompt: "How many teachers were near the entrance?",
             options: {
@@ -156,6 +161,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 65,
             order: 4,
             prompt: "What was on the stage?",
             options: {
@@ -175,7 +181,6 @@ async function main() {
   await prisma.video.create({
     data: {
       videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      checkpointSeconds: 65,
       description:
         "A city scene where people are doing different actions right now.",
       order: 1,
@@ -187,6 +192,7 @@ async function main() {
       questions: {
         create: [
           {
+            checkpointSeconds: 25,
             order: 1,
             prompt: "What is the tourist doing?",
             options: {
@@ -199,6 +205,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 45,
             order: 2,
             prompt: "What is the boy carrying?",
             options: {
@@ -211,6 +218,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 65,
             order: 3,
             prompt: "Where are the musicians playing?",
             options: {
@@ -223,6 +231,7 @@ async function main() {
             },
           },
           {
+            checkpointSeconds: 80,
             order: 4,
             prompt: "Why are people opening umbrellas?",
             options: {

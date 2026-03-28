@@ -47,9 +47,7 @@ export function VideoFields({
   defaults,
 }: {
   defaults?: {
-    checkpointSeconds?: number;
     description?: string | null;
-    durationSeconds?: number | null;
     order?: number;
     slug?: string;
     title?: string;
@@ -74,28 +72,13 @@ export function VideoFields({
         hint="e.g. https://www.youtube.com/watch?v=VIDEO_ID"
         required
       />
-      <div className="grid gap-5 sm:grid-cols-3">
-        <Field
-          label="Checkpoint (seconds)"
-          name="checkpointSeconds"
-          defaultValue={defaults?.checkpointSeconds?.toString() ?? "0"}
-          hint="When to pause and show quiz"
-          required
-        />
-        <Field
-          label="Duration (seconds)"
-          name="durationSeconds"
-          defaultValue={defaults?.durationSeconds?.toString() ?? ""}
-          hint="Optional — for progress bar"
-        />
-        <Field
-          label="Order"
-          name="order"
-          defaultValue={defaults?.order?.toString() ?? "0"}
-          hint="Display order within topic"
-          required
-        />
-      </div>
+      <Field
+        label="Order"
+        name="order"
+        defaultValue={defaults?.order?.toString() ?? "0"}
+        hint="Display order within topic"
+        required
+      />
       <Field
         label="Description"
         name="description"

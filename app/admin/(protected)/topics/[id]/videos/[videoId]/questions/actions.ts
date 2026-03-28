@@ -27,10 +27,11 @@ export async function createQuestionAction(
 ) {
   const prompt = formData.get("prompt")?.toString().trim() ?? "";
   const order = parseInt(formData.get("order")?.toString() ?? "1", 10);
+  const checkpointSeconds = parseInt(formData.get("checkpointSeconds")?.toString() ?? "0", 10);
   const correct = parseInt(formData.get("correct")?.toString() ?? "1", 10);
   const options = buildOptions(formData, correct);
 
-  await adminCreateQuestion({ options, order, prompt, videoId });
+  await adminCreateQuestion({ checkpointSeconds, options, order, prompt, videoId });
 
   revalidatePath(`/admin/topics/${topicId}/videos/${videoId}/questions`);
   redirect(`/admin/topics/${topicId}/videos/${videoId}/questions`);
@@ -43,6 +44,7 @@ export async function updateQuestionAction(
   formData: FormData,
 ) {
   const prompt = formData.get("prompt")?.toString().trim() ?? "";
+  const checkpointSeconds = parseInt(formData.get("checkpointSeconds")?.toString() ?? "0", 10);
   const correct = parseInt(formData.get("correct")?.toString() ?? "1", 10);
 
   const options = [1, 2, 3, 4].map((n) => ({
@@ -51,7 +53,7 @@ export async function updateQuestionAction(
     text: formData.get(`option${n}`)?.toString().trim() ?? "",
   }));
 
-  await adminUpdateQuestion(questionId, { options, prompt });
+  await adminUpdateQuestion(questionId, { checkpointSeconds, options, prompt });
 
   revalidatePath(`/admin/topics/${topicId}/videos/${videoId}/questions`);
   redirect(`/admin/topics/${topicId}/videos/${videoId}/questions`);

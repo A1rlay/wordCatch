@@ -61,7 +61,6 @@ export type TopicCard = {
 };
 
 export type TopicVideoSummary = {
-  checkpointLabel: string;
   description: string | null;
   questionCount: number;
   slug: string;
@@ -78,6 +77,7 @@ export type TopicDetail = {
 };
 
 export type QuizQuestion = {
+  checkpointSeconds: number;
   id: string;
   options: {
     id: string;
@@ -88,10 +88,7 @@ export type QuizQuestion = {
 };
 
 export type VideoLesson = {
-  checkpointLabel: string;
-  checkpointSeconds: number;
   description: string | null;
-  durationSeconds: number | null;
   questions: QuizQuestion[];
   slug: string;
   title: string;
@@ -103,30 +100,10 @@ export type VideoLesson = {
   videoUrl: string;
 };
 
-export type QuizAnswerInput = {
-  optionId: string;
-  questionId: string;
+export type SingleAnswerResult = {
+  correct: boolean;
+  correctOptionId: string | null;
 };
-
-export type QuizSubmission = {
-  correctCount: number;
-  results: {
-    correct: boolean;
-    correctOptionId: string | null;
-    questionId: string;
-    selectedOptionId: string | null;
-  }[];
-  total: number;
-};
-
-function formatCheckpointLabel(seconds: number) {
-  const mins = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const secs = (seconds % 60).toString().padStart(2, "0");
-
-  return `${mins}:${secs}`;
-}
 
 function mapTopicCard(topic: TopicCatalogRecord): TopicCard {
   return {
@@ -147,7 +124,6 @@ function mapTopicDetail(topic: TopicDetailRecord): TopicDetail {
     tags: topic.tags,
     title: topic.title,
     videos: topic.videos.map((video) => ({
-      checkpointLabel: formatCheckpointLabel(video.checkpointSeconds),
       description: video.description,
       questionCount: video._count.questions,
       slug: video.slug,
@@ -158,11 +134,9 @@ function mapTopicDetail(topic: TopicDetailRecord): TopicDetail {
 
 function mapVideoLesson(video: VideoLessonRecord): VideoLesson {
   return {
-    checkpointLabel: formatCheckpointLabel(video.checkpointSeconds),
-    checkpointSeconds: video.checkpointSeconds,
     description: video.description,
-    durationSeconds: video.durationSeconds,
     questions: video.questions.map((question) => ({
+      checkpointSeconds: question.checkpointSeconds,
       id: question.id,
       options: question.options.map((option) => ({
         id: option.id,
@@ -218,44 +192,21 @@ export async function getVideoLessonBySlug(topicSlug: string, videoSlug: string)
   return video ? mapVideoLesson(video) : null;
 }
 
-export async function submitVideoQuizAnswers(
-  topicSlug: string,
-  videoSlug: string,
-  answers: QuizAnswerInput[],
-) {
-  const video = await prisma.video.findFirst({
-    ...videoLessonArgs,
-    where: {
-      slug: videoSlug,
-      topic: {
-        slug: topicSlug,
-      },
-    },
+export async function submitSingleAnswer(
+  questionId: string,
+  optionId: string,
+): Promise<SingleAnswerResult | null> {
+  const question = await prisma.question.findUnique({
+    where: { id: questionId },
+    include: { options: true },
   });
 
-  if (!video) {
-    return null;
-  }
+  if (!question) return null;
 
-  const selectedOptionIdByQuestion = new Map(
-    answers.map((answer) => [answer.questionId, answer.optionId]),
-  );
-
-  const results = video.questions.map((question) => {
-    const correctOption = question.options.find((option) => option.isCorrect) ?? null;
-    const selectedOptionId = selectedOptionIdByQuestion.get(question.id) ?? null;
-
-    return {
-      correct: selectedOptionId !== null && selectedOptionId === correctOption?.id,
-      correctOptionId: correctOption?.id ?? null,
-      questionId: question.id,
-      selectedOptionId,
-    };
-  });
+  const correctOption = question.options.find((o) => o.isCorrect) ?? null;
 
   return {
-    correctCount: results.filter((result) => result.correct).length,
-    results,
-    total: results.length,
-  } satisfies QuizSubmission;
+    correct: optionId === correctOption?.id,
+    correctOptionId: correctOption?.id ?? null,
+  };
 }

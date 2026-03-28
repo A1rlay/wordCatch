@@ -31,6 +31,7 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
       >
         <QuestionFields
           defaults={{
+            checkpointSeconds: question.checkpointSeconds,
             options: question.options,
             prompt: question.prompt,
           }}
@@ -54,6 +55,7 @@ export function QuestionFields({
 }: {
   defaultOrder?: number;
   defaults?: {
+    checkpointSeconds?: number;
     options?: { id: string; isCorrect: boolean; order: number; text: string }[];
     prompt?: string;
   };
@@ -61,25 +63,46 @@ export function QuestionFields({
   const correctIndex =
     defaults?.options?.find((o) => o.isCorrect)?.order ?? 1;
 
+  const inputClass =
+    "rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]";
+
   return (
     <>
-      {defaultOrder !== undefined && (
+      <div className="grid gap-5 sm:grid-cols-2">
+        {defaultOrder !== undefined && (
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="order"
+              className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+            >
+              Order <span className="text-[var(--accent)]">*</span>
+            </label>
+            <input
+              id="order"
+              name="order"
+              defaultValue={defaultOrder}
+              required
+              className={inputClass}
+            />
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <label
-            htmlFor="order"
+            htmlFor="checkpointSeconds"
             className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
           >
-            Order <span className="text-[var(--accent)]">*</span>
+            Checkpoint (seconds) <span className="text-[var(--accent)]">*</span>
           </label>
           <input
-            id="order"
-            name="order"
-            defaultValue={defaultOrder}
+            id="checkpointSeconds"
+            name="checkpointSeconds"
+            defaultValue={defaults?.checkpointSeconds?.toString() ?? "0"}
             required
-            className="rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+            className={inputClass}
           />
+          <p className="text-xs text-[var(--muted)]">When to pause video for this question</p>
         </div>
-      )}
+      </div>
 
       <div className="flex flex-col gap-1.5">
         <label
@@ -93,7 +116,7 @@ export function QuestionFields({
           name="prompt"
           defaultValue={defaults?.prompt}
           required
-          className="rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+          className={inputClass}
         />
       </div>
 

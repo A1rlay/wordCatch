@@ -10,14 +10,9 @@ export function VideoList({ topic }: { topic: TopicDetail }) {
           key={video.slug}
           className="glass-panel rounded-[30px] border border-[var(--border)] p-7 shadow-[0_20px_60px_rgba(13,34,66,0.08)]"
         >
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
-              Video {index + 1}
-            </p>
-            <span className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-              Stop at {video.checkpointLabel}
-            </span>
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
+            Video {index + 1}
+          </p>
 
           <h2 className="mt-4 font-serif text-3xl text-[var(--foreground)]">
             {video.title}

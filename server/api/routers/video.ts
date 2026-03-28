@@ -4,7 +4,7 @@ import { z } from "zod";
 import {
   getTopicBySlug,
   getVideoLessonBySlug,
-  submitVideoQuizAnswers,
+  submitSingleAnswer,
 } from "@/server/data/learning";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
@@ -29,35 +29,23 @@ export const videoRouter = createTRPCRouter({
       return topic?.videos ?? [];
     }),
 
-  submitQuiz: publicProcedure
+  submitAnswer: publicProcedure
     .input(
       z.object({
-        answers: z
-          .array(
-            z.object({
-              optionId: z.string().min(1),
-              questionId: z.string().min(1),
-            }),
-          )
-          .min(1),
-        topicSlug: z.string().min(1),
-        videoSlug: z.string().min(1),
+        optionId: z.string().min(1),
+        questionId: z.string().min(1),
       }),
     )
     .mutation(async ({ input }) => {
-      const submission = await submitVideoQuizAnswers(
-        input.topicSlug,
-        input.videoSlug,
-        input.answers,
-      );
+      const result = await submitSingleAnswer(input.questionId, input.optionId);
 
-      if (!submission) {
+      if (!result) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Video lesson not found.",
+          message: "Question not found.",
         });
       }
 
-      return submission;
+      return result;
     }),
 });

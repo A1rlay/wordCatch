@@ -46,7 +46,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
-                    Question {question.order}
+                    Question {question.order} · checkpoint {question.checkpointSeconds}s
                   </p>
                   <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
                     {question.prompt}

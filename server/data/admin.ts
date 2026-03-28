@@ -72,9 +72,7 @@ export async function adminGetVideo(id: string) {
 }
 
 export async function adminCreateVideo(data: {
-  checkpointSeconds: number;
   description: string;
-  durationSeconds: number | null;
   order: number;
   slug: string;
   title: string;
@@ -88,9 +86,7 @@ export async function adminCreateVideo(data: {
 export async function adminUpdateVideo(
   id: string,
   data: {
-    checkpointSeconds: number;
     description: string;
-    durationSeconds: number | null;
     order: number;
     slug: string;
     title: string;
@@ -118,6 +114,7 @@ export async function adminGetQuestion(id: string) {
 }
 
 export async function adminCreateQuestion(data: {
+  checkpointSeconds: number;
   options: { isCorrect: boolean; order: number; text: string }[];
   order: number;
   prompt: string;
@@ -136,6 +133,7 @@ export async function adminCreateQuestion(data: {
 export async function adminUpdateQuestion(
   id: string,
   data: {
+    checkpointSeconds: number;
     options: { id: string; isCorrect: boolean; text: string }[];
     prompt: string;
   },

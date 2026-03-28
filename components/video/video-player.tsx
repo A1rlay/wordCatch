@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 import { useTRPC } from "@/app/providers";
-import type { QuizSubmission, VideoLesson } from "@/server/data/learning";
+import type { QuizQuestion, SingleAnswerResult, VideoLesson } from "@/server/data/learning";
 
 // ─── YouTube IFrame API types ─────────────────────────────────────────────────
 
@@ -55,7 +55,7 @@ function formatTime(seconds: number) {
 // ─── State types ──────────────────────────────────────────────────────────────
 
 type PlayerPhase = "idle" | "playing" | "paused" | "checkpoint" | "done";
-type QuizPhase = "answering" | "submitting" | "results";
+type QuizPhase = "answering" | "submitting" | "result";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -63,21 +63,29 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const checkpointFiredRef = useRef(false);
+  const nextCheckpointIdxRef = useRef(0);
+  const activeCheckpointIdxRef = useRef<number | null>(null);
   const playerPhaseRef = useRef<PlayerPhase>("idle");
 
   const [playerPhase, setPlayerPhase] = useState<PlayerPhase>("idle");
   const [quizPhase, setQuizPhase] = useState<QuizPhase>("answering");
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState<number | null>(video.durationSeconds);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submission, setSubmission] = useState<QuizSubmission | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [activeQuestion, setActiveQuestion] = useState<QuizQuestion | null>(null);
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [result, setResult] = useState<SingleAnswerResult | null>(null);
+
+  // Sort questions by checkpointSeconds so they trigger in chronological order
+  const sortedQuestions = useMemo(
+    () => [...video.questions].sort((a, b) => a.checkpointSeconds - b.checkpointSeconds),
+    [video.questions],
+  );
 
   const videoId = extractYouTubeId(video.videoUrl);
 
   const trpc = useTRPC();
   const submitMutation = useMutation({
-    ...trpc.video.submitQuiz.mutationOptions(),
+    ...trpc.video.submitAnswer.mutationOptions(),
   });
 
   function setPhase(phase: PlayerPhase) {
@@ -96,12 +104,21 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
       setCurrentTime(time);
       if (dur > 0) setDuration(dur);
 
-      if (!checkpointFiredRef.current && time >= video.checkpointSeconds) {
-        checkpointFiredRef.current = true;
-        clearInterval(intervalRef.current!);
-        player.pauseVideo();
-        setPhase("checkpoint");
-        setQuizPhase("answering");
+      const idx = nextCheckpointIdxRef.current;
+      if (idx < sortedQuestions.length) {
+        const checkpoint = sortedQuestions[idx];
+        if (time >= checkpoint.checkpointSeconds) {
+          nextCheckpointIdxRef.current = idx + 1;
+          activeCheckpointIdxRef.current = idx;
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+          player.pauseVideo();
+          setPhase("checkpoint");
+          setActiveQuestion(checkpoint);
+          setSelectedOptionId(null);
+          setResult(null);
+          setQuizPhase("answering");
+        }
       }
     }, 500);
   }
@@ -158,28 +175,25 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
   }, [videoId]);
 
   function handleRelisten() {
-    checkpointFiredRef.current = false;
-    playerRef.current?.seekTo(Math.max(0, video.checkpointSeconds - 10), true);
+    const idx = activeCheckpointIdxRef.current;
+    const prevSeconds =
+      idx !== null && idx > 0 ? sortedQuestions[idx - 1].checkpointSeconds : 0;
+    // Roll back so this checkpoint fires again when we reach it
+    nextCheckpointIdxRef.current = idx ?? 0;
+    playerRef.current?.seekTo(prevSeconds, true);
     playerRef.current?.playVideo();
     setPhase("playing");
   }
 
   function handleSubmit() {
-    const answerList = Object.entries(answers).map(([questionId, optionId]) => ({
-      optionId,
-      questionId,
-    }));
+    if (!activeQuestion || !selectedOptionId) return;
     setQuizPhase("submitting");
     submitMutation.mutate(
-      {
-        answers: answerList,
-        topicSlug: video.topic.slug,
-        videoSlug: video.slug,
-      },
+      { optionId: selectedOptionId, questionId: activeQuestion.id },
       {
         onSuccess: (data) => {
-          setSubmission(data);
-          setQuizPhase("results");
+          setResult(data);
+          setQuizPhase("result");
         },
         onError: () => setQuizPhase("answering"),
       },
@@ -191,11 +205,11 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
     setPhase("playing");
   }
 
-  const allAnswered =
-    video.questions.length > 0 && video.questions.every((q) => q.id in answers);
-
   const progressPct =
     duration && duration > 0 ? Math.min(100, (currentTime / duration) * 100) : null;
+
+  const completedCount = nextCheckpointIdxRef.current;
+  const totalQuestions = sortedQuestions.length;
 
   if (!videoId) {
     return (
@@ -219,10 +233,9 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-[var(--muted)]">
             {playerPhase === "idle" && "Press play in the video above to start"}
-            {playerPhase === "playing" && "Listening…"}
+            {playerPhase === "playing" && "Watching…"}
             {playerPhase === "paused" && "Paused"}
-            {playerPhase === "checkpoint" &&
-              "Quiz time — answer the questions to continue"}
+            {playerPhase === "checkpoint" && "Answer the question to continue"}
             {playerPhase === "done" && "Finished"}
           </p>
           <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
@@ -245,83 +258,61 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
           </div>
         )}
 
-        <div className="mt-3 flex items-center gap-2 text-xs text-[var(--muted)]">
-          <span className="rounded-full border border-[var(--border)] px-3 py-1">
-            Checkpoint at {video.checkpointLabel}
-          </span>
-        </div>
+        {totalQuestions > 0 && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-[var(--muted)]">
+            <span className="rounded-full border border-[var(--border)] px-3 py-1">
+              {completedCount} / {totalQuestions} questions answered
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Checkpoint modal */}
-      {playerPhase === "checkpoint" && (
+      {playerPhase === "checkpoint" && activeQuestion !== null && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm sm:items-center">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-8 shadow-[0_24px_80px_rgba(13,34,66,0.18)]">
             {quizPhase === "answering" && (
               <>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-                  Checkpoint
+                  Checkpoint · Question {activeQuestion.order}
                 </p>
-                <h2 className="mt-3 font-serif text-3xl text-[var(--foreground)]">
-                  Quick check before you continue.
+                <h2 className="mt-3 font-serif text-2xl text-[var(--foreground)]">
+                  {activeQuestion.prompt}
                 </h2>
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  Answer all {video.questions.length} questions, then keep watching.
-                </p>
 
-                <div className="mt-6 space-y-5">
-                  {video.questions.map((question) => (
-                    <fieldset
-                      key={question.id}
-                      className="rounded-[20px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] p-5"
-                    >
-                      <legend className="sr-only">Question {question.order}</legend>
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
-                        Question {question.order}
-                      </p>
-                      <p className="mt-2 text-sm leading-7 text-[var(--foreground)]">
-                        {question.prompt}
-                      </p>
-                      <div className="mt-4 space-y-2">
-                        {question.options.map((option) => {
-                          const selected = answers[question.id] === option.id;
-                          return (
-                            <label
-                              key={option.id}
-                              className={`flex cursor-pointer items-center gap-3 rounded-full border px-4 py-2.5 text-sm transition-colors ${
-                                selected
-                                  ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-                                  : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--foreground)] hover:text-[var(--foreground)]"
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name={question.id}
-                                value={option.id}
-                                checked={selected}
-                                onChange={() =>
-                                  setAnswers((prev) => ({
-                                    ...prev,
-                                    [question.id]: option.id,
-                                  }))
-                                }
-                                className="sr-only"
-                              />
-                              {option.text}
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </fieldset>
-                  ))}
+                <div className="mt-6 space-y-2">
+                  {activeQuestion.options.map((option) => {
+                    const selected = selectedOptionId === option.id;
+                    return (
+                      <label
+                        key={option.id}
+                        className={`flex cursor-pointer items-center gap-3 rounded-full border px-4 py-2.5 text-sm transition-colors ${
+                          selected
+                            ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                            : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--foreground)] hover:text-[var(--foreground)]"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="answer"
+                          value={option.id}
+                          checked={selected}
+                          onChange={() => setSelectedOptionId(option.id)}
+                          className="sr-only"
+                        />
+                        {option.text}
+                      </label>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button
                     onClick={handleSubmit}
-                    disabled={!allAnswered}
+                    disabled={selectedOptionId === null}
                     className="rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0"
                   >
-                    Submit answers
+                    Submit
                   </button>
                   <button
                     onClick={handleRelisten}
@@ -336,80 +327,54 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
             {quizPhase === "submitting" && (
               <div className="flex flex-col items-center gap-4 py-8 text-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--foreground)]" />
-                <p className="text-sm text-[var(--muted)]">Checking your answers…</p>
+                <p className="text-sm text-[var(--muted)]">Checking your answer…</p>
               </div>
             )}
 
-            {quizPhase === "results" && submission !== null && (
+            {quizPhase === "result" && result !== null && (
               <>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-                  Results
+                  {result.correct ? "Correct!" : "Not quite"}
                 </p>
-                <h2 className="mt-3 font-serif text-3xl text-[var(--foreground)]">
-                  {submission.correctCount} of {submission.total} correct
+                <h2 className="mt-3 font-serif text-2xl text-[var(--foreground)]">
+                  {activeQuestion.prompt}
                 </h2>
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  {submission.correctCount === submission.total
-                    ? "Perfect score! Keep watching."
-                    : submission.correctCount >= Math.ceil(submission.total / 2)
-                      ? "Good effort. Review the questions below."
-                      : "Take another watch and try again."}
-                </p>
 
-                <div className="mt-6 space-y-4">
-                  {video.questions.map((question) => {
-                    const result = submission.results.find(
-                      (r) => r.questionId === question.id,
-                    );
-                    const correct = result?.correct ?? false;
+                <div className="mt-6 space-y-2">
+                  {activeQuestion.options.map((option) => {
+                    const isSelected = selectedOptionId === option.id;
+                    const isCorrect = result.correctOptionId === option.id;
                     return (
                       <div
-                        key={question.id}
-                        className={`rounded-[20px] border p-5 ${
-                          correct
-                            ? "border-green-200 bg-green-50"
-                            : "border-red-200 bg-red-50"
+                        key={option.id}
+                        className={`rounded-full border px-4 py-2.5 text-sm ${
+                          isCorrect
+                            ? "border-green-400 bg-green-100 text-green-800"
+                            : isSelected
+                              ? "border-red-400 bg-red-100 text-red-700 line-through"
+                              : "border-transparent text-[var(--muted)]"
                         }`}
                       >
-                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
-                          Question {question.order}
-                        </p>
-                        <p className="mt-2 text-sm leading-7 text-[var(--foreground)]">
-                          {question.prompt}
-                        </p>
-                        <div className="mt-3 space-y-1.5">
-                          {question.options.map((option) => {
-                            const isSelected =
-                              result?.selectedOptionId === option.id;
-                            const isCorrect =
-                              result?.correctOptionId === option.id;
-                            return (
-                              <div
-                                key={option.id}
-                                className={`rounded-full border px-4 py-2 text-sm ${
-                                  isCorrect
-                                    ? "border-green-400 bg-green-100 text-green-800"
-                                    : isSelected
-                                      ? "border-red-400 bg-red-100 text-red-700 line-through"
-                                      : "border-transparent text-[var(--muted)]"
-                                }`}
-                              >
-                                {option.text}
-                              </div>
-                            );
-                          })}
-                        </div>
+                        {option.text}
                       </div>
                     );
                   })}
                 </div>
 
-                <button
-                  onClick={handleContinue}
-                  className="mt-6 rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
-                >
-                  Continue watching
-                </button>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    onClick={handleContinue}
+                    className="rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
+                  >
+                    Continue watching
+                  </button>
+                  <button
+                    onClick={handleRelisten}
+                    className="rounded-full border border-[var(--border)] px-6 py-3 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-[var(--foreground)] hover:text-[var(--foreground)]"
+                  >
+                    Re-watch
+                  </button>
+                </div>
               </>
             )}
           </div>
