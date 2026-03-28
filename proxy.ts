@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Login page is always accessible
@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Full HMAC verification happens in the admin layout (server component).
-  // Middleware only handles the "no cookie at all" case for clean redirects.
+  // Proxy only handles the "no cookie at all" case for clean redirects.
   return NextResponse.next();
 }
 
