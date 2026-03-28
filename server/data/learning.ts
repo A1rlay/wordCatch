@@ -6,7 +6,7 @@ const topicCatalogArgs = Prisma.validator<Prisma.TopicDefaultArgs>()({
   include: {
     _count: {
       select: {
-        audios: true,
+        videos: true,
       },
     },
   },
@@ -14,7 +14,7 @@ const topicCatalogArgs = Prisma.validator<Prisma.TopicDefaultArgs>()({
 
 const topicDetailArgs = Prisma.validator<Prisma.TopicDefaultArgs>()({
   include: {
-    audios: {
+    videos: {
       include: {
         _count: {
           select: {
@@ -29,7 +29,7 @@ const topicDetailArgs = Prisma.validator<Prisma.TopicDefaultArgs>()({
   },
 });
 
-const audioLessonArgs = Prisma.validator<Prisma.AudioDefaultArgs>()({
+const videoLessonArgs = Prisma.validator<Prisma.VideoDefaultArgs>()({
   include: {
     questions: {
       include: {
@@ -49,18 +49,18 @@ const audioLessonArgs = Prisma.validator<Prisma.AudioDefaultArgs>()({
 
 type TopicCatalogRecord = Prisma.TopicGetPayload<typeof topicCatalogArgs>;
 type TopicDetailRecord = Prisma.TopicGetPayload<typeof topicDetailArgs>;
-type AudioLessonRecord = Prisma.AudioGetPayload<typeof audioLessonArgs>;
+type VideoLessonRecord = Prisma.VideoGetPayload<typeof videoLessonArgs>;
 
 export type TopicCard = {
-  audioCount: number;
   description: string | null;
   level: string | null;
   slug: string;
   tags: string[];
   title: string;
+  videoCount: number;
 };
 
-export type TopicAudioSummary = {
+export type TopicVideoSummary = {
   checkpointLabel: string;
   description: string | null;
   questionCount: number;
@@ -69,12 +69,12 @@ export type TopicAudioSummary = {
 };
 
 export type TopicDetail = {
-  audios: TopicAudioSummary[];
   description: string | null;
   level: string | null;
   slug: string;
   tags: string[];
   title: string;
+  videos: TopicVideoSummary[];
 };
 
 export type QuizQuestion = {
@@ -87,8 +87,7 @@ export type QuizQuestion = {
   prompt: string;
 };
 
-export type AudioLesson = {
-  audioUrl: string;
+export type VideoLesson = {
   checkpointLabel: string;
   checkpointSeconds: number;
   description: string | null;
@@ -101,6 +100,7 @@ export type AudioLesson = {
     title: string;
   };
   transcript: string | null;
+  videoUrl: string;
 };
 
 export type QuizAnswerInput = {
@@ -130,40 +130,39 @@ function formatCheckpointLabel(seconds: number) {
 
 function mapTopicCard(topic: TopicCatalogRecord): TopicCard {
   return {
-    audioCount: topic._count.audios,
     description: topic.description,
     level: topic.level,
     slug: topic.slug,
     tags: topic.tags,
     title: topic.title,
+    videoCount: topic._count.videos,
   };
 }
 
 function mapTopicDetail(topic: TopicDetailRecord): TopicDetail {
   return {
-    audios: topic.audios.map((audio) => ({
-      checkpointLabel: formatCheckpointLabel(audio.checkpointSeconds),
-      description: audio.description,
-      questionCount: audio._count.questions,
-      slug: audio.slug,
-      title: audio.title,
-    })),
     description: topic.description,
     level: topic.level,
     slug: topic.slug,
     tags: topic.tags,
     title: topic.title,
+    videos: topic.videos.map((video) => ({
+      checkpointLabel: formatCheckpointLabel(video.checkpointSeconds),
+      description: video.description,
+      questionCount: video._count.questions,
+      slug: video.slug,
+      title: video.title,
+    })),
   };
 }
 
-function mapAudioLesson(audio: AudioLessonRecord): AudioLesson {
+function mapVideoLesson(video: VideoLessonRecord): VideoLesson {
   return {
-    audioUrl: audio.audioUrl,
-    checkpointLabel: formatCheckpointLabel(audio.checkpointSeconds),
-    checkpointSeconds: audio.checkpointSeconds,
-    description: audio.description,
-    durationSeconds: audio.durationSeconds,
-    questions: audio.questions.map((question) => ({
+    checkpointLabel: formatCheckpointLabel(video.checkpointSeconds),
+    checkpointSeconds: video.checkpointSeconds,
+    description: video.description,
+    durationSeconds: video.durationSeconds,
+    questions: video.questions.map((question) => ({
       id: question.id,
       options: question.options.map((option) => ({
         id: option.id,
@@ -172,13 +171,14 @@ function mapAudioLesson(audio: AudioLessonRecord): AudioLesson {
       order: question.order,
       prompt: question.prompt,
     })),
-    slug: audio.slug,
-    title: audio.title,
+    slug: video.slug,
+    title: video.title,
     topic: {
-      slug: audio.topic.slug,
-      title: audio.topic.title,
+      slug: video.topic.slug,
+      title: video.topic.title,
     },
-    transcript: audio.transcript,
+    transcript: video.transcript,
+    videoUrl: video.videoUrl,
   };
 }
 
@@ -204,36 +204,36 @@ export async function getTopicBySlug(slug: string) {
   return topic ? mapTopicDetail(topic) : null;
 }
 
-export async function getAudioLessonBySlug(topicSlug: string, audioSlug: string) {
-  const audio = await prisma.audio.findFirst({
-    ...audioLessonArgs,
+export async function getVideoLessonBySlug(topicSlug: string, videoSlug: string) {
+  const video = await prisma.video.findFirst({
+    ...videoLessonArgs,
     where: {
-      slug: audioSlug,
+      slug: videoSlug,
       topic: {
         slug: topicSlug,
       },
     },
   });
 
-  return audio ? mapAudioLesson(audio) : null;
+  return video ? mapVideoLesson(video) : null;
 }
 
-export async function submitAudioQuizAnswers(
+export async function submitVideoQuizAnswers(
   topicSlug: string,
-  audioSlug: string,
+  videoSlug: string,
   answers: QuizAnswerInput[],
 ) {
-  const audio = await prisma.audio.findFirst({
-    ...audioLessonArgs,
+  const video = await prisma.video.findFirst({
+    ...videoLessonArgs,
     where: {
-      slug: audioSlug,
+      slug: videoSlug,
       topic: {
         slug: topicSlug,
       },
     },
   });
 
-  if (!audio) {
+  if (!video) {
     return null;
   }
 
@@ -241,7 +241,7 @@ export async function submitAudioQuizAnswers(
     answers.map((answer) => [answer.questionId, answer.optionId]),
   );
 
-  const results = audio.questions.map((question) => {
+  const results = video.questions.map((question) => {
     const correctOption = question.options.find((option) => option.isCorrect) ?? null;
     const selectedOptionId = selectedOptionIdByQuestion.get(question.id) ?? null;
 

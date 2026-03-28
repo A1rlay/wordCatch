@@ -19,8 +19,8 @@ export function TopicGrid({ topics }: { topics: TopicCard[] }) {
                 {topic.title}
               </h2>
             </div>
-              <span className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-                {topic.audioCount} audios
+            <span className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+              {topic.videoCount} videos
             </span>
           </div>
 

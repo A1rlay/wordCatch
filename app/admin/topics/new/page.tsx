@@ -1,0 +1,123 @@
+import { createTopicAction } from "../actions";
+
+export default function NewTopicPage() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+          Admin · Topics
+        </p>
+        <h1 className="mt-2 font-serif text-4xl text-[var(--foreground)]">
+          New topic
+        </h1>
+      </div>
+
+      <form
+        action={createTopicAction}
+        className="flex flex-col gap-5 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-8"
+      >
+        <TopicFields />
+        <div className="flex gap-3 pt-2">
+          <button
+            type="submit"
+            className="rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
+          >
+            Create topic
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export function TopicFields({
+  defaults,
+}: {
+  defaults?: {
+    description?: string | null;
+    level?: string | null;
+    slug?: string;
+    tags?: string[];
+    title?: string;
+  };
+} = {}) {
+  return (
+    <>
+      <Field label="Title" name="title" defaultValue={defaults?.title} required />
+      <Field
+        label="Slug"
+        name="slug"
+        defaultValue={defaults?.slug}
+        hint="URL-safe identifier, e.g. verb-to-be-in-past"
+        required
+      />
+      <Field
+        label="Level"
+        name="level"
+        defaultValue={defaults?.level ?? ""}
+        hint="e.g. A1 - A2"
+      />
+      <Field
+        label="Description"
+        name="description"
+        defaultValue={defaults?.description ?? ""}
+        multiline
+      />
+      <Field
+        label="Tags"
+        name="tags"
+        defaultValue={defaults?.tags?.join(", ") ?? ""}
+        hint="Comma-separated, e.g. was, were, past descriptions"
+      />
+    </>
+  );
+}
+
+function Field({
+  defaultValue,
+  hint,
+  label,
+  multiline,
+  name,
+  required,
+}: {
+  defaultValue?: string;
+  hint?: string;
+  label: string;
+  multiline?: boolean;
+  name: string;
+  required?: boolean;
+}) {
+  const inputClass =
+    "rounded-[14px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]";
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label
+        htmlFor={name}
+        className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+      >
+        {label}
+        {required && <span className="ml-1 text-[var(--accent)]">*</span>}
+      </label>
+      {multiline ? (
+        <textarea
+          id={name}
+          name={name}
+          defaultValue={defaultValue}
+          rows={3}
+          className={inputClass}
+        />
+      ) : (
+        <input
+          id={name}
+          name={name}
+          defaultValue={defaultValue}
+          required={required}
+          className={inputClass}
+        />
+      )}
+      {hint && <p className="text-xs text-[var(--muted)]">{hint}</p>}
+    </div>
+  );
+}

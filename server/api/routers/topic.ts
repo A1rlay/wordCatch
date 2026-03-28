@@ -11,5 +11,6 @@ export const topicRouter = createTRPCRouter({
       }),
     )
     .query(({ input }) => getTopicBySlug(input.slug)),
+
   list: publicProcedure.query(() => getTopicCatalog()),
 });

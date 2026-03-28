@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { AudioList } from "@/components/audio/audio-list";
+import { VideoList } from "@/components/video/video-list";
 import { getTopicBySlug } from "@/server/data/learning";
 
 type TopicPageProps = {
@@ -36,14 +36,14 @@ export default async function TopicPage({ params }: TopicPageProps) {
           </p>
           <ol className="mt-4 space-y-4 text-sm leading-7 text-[var(--muted)]">
             <li>1. Student opens a grammar topic.</li>
-            <li>2. Student selects one listening audio.</li>
-            <li>3. Audio stops at a configured checkpoint.</li>
+            <li>2. Student selects one video lesson.</li>
+            <li>3. Video stops at a configured checkpoint.</li>
             <li>4. A four-question modal measures comprehension.</li>
           </ol>
         </article>
       </section>
 
-      <AudioList topic={topic} />
+      <VideoList topic={topic} />
     </main>
   );
 }

@@ -1,7 +1,27 @@
 import Link from "next/link";
 
 import { HomeHero } from "@/components/home/home-hero";
-import { homeHighlights } from "@/lib/placeholders";
+
+const highlights = [
+  {
+    description:
+      "Dedicated topic routes, video lesson routes, and an API entry point make it easy to build the student flow progressively.",
+    eyebrow: "Frontend",
+    title: "Learning paths are mapped into the App Router.",
+  },
+  {
+    description:
+      "tRPC routers separate health checks, topic lookups, and video lookups so backend features can grow without mixing concerns.",
+    eyebrow: "Backend",
+    title: "Server structure is ready for business logic and validation.",
+  },
+  {
+    description:
+      "Prisma models represent topics, videos, questions, and multiple-choice options for PostgreSQL.",
+    eyebrow: "Database",
+    title: "Your domain schema matches the listening experience.",
+  },
+];
 
 export default function Home() {
   return (
@@ -9,7 +29,7 @@ export default function Home() {
       <HomeHero />
 
       <section className="grid gap-5 md:grid-cols-3">
-        {homeHighlights.map((item) => (
+        {highlights.map((item) => (
           <article
             key={item.title}
             className="rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_20px_60px_rgba(13,34,66,0.08)]"
@@ -30,14 +50,11 @@ export default function Home() {
       <section className="flex flex-col gap-5 rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-8 shadow-[0_24px_80px_rgba(13,34,66,0.08)] lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-            Project structure ready
+            Ready to explore
           </p>
           <h2 className="mt-3 font-serif text-3xl text-[var(--foreground)] sm:text-4xl">
-            Topics, audio lessons, quiz checkpoints, API routes, and PostgreSQL models are scaffolded.
+            Topics, video lessons, quiz checkpoints, and PostgreSQL are all live.
           </h2>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--muted)] sm:text-base">
-            Start with the learning routes now, then we can add real playback checkpoints, database queries, and the quiz modal flow feature by feature.
-          </p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -48,10 +65,10 @@ export default function Home() {
             Browse topics
           </Link>
           <Link
-            href="/topics/verb-to-be-in-past"
+            href="/admin"
             className="rounded-full border border-[var(--border-strong)] px-6 py-3 text-sm font-semibold text-[var(--foreground)] transition-colors duration-200 hover:bg-[var(--surface-strong)]"
           >
-            Open sample route
+            Admin panel
           </Link>
         </div>
       </section>

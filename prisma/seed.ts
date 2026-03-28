@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function main() {
   await prisma.questionOption.deleteMany();
   await prisma.question.deleteMany();
-  await prisma.audio.deleteMany();
+  await prisma.video.deleteMany();
   await prisma.topic.deleteMany();
 
   await prisma.topic.createMany({
@@ -38,9 +38,9 @@ async function main() {
 
   const topicIdBySlug = new Map(topics.map((topic) => [topic.slug, topic.id]));
 
-  await prisma.audio.create({
+  await prisma.video.create({
     data: {
-      audioUrl: "https://example.com/audio/weekend-memory.mp3",
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       checkpointSeconds: 75,
       description:
         "A short story about what two students did last weekend, focused on was and were usage.",
@@ -105,9 +105,9 @@ async function main() {
     },
   });
 
-  await prisma.audio.create({
+  await prisma.video.create({
     data: {
-      audioUrl: "https://example.com/audio/school-event-recap.mp3",
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       checkpointSeconds: 50,
       description:
         "A classroom dialogue describing where objects and people were during a school event.",
@@ -172,9 +172,9 @@ async function main() {
     },
   });
 
-  await prisma.audio.create({
+  await prisma.video.create({
     data: {
-      audioUrl: "https://example.com/audio/busy-city-morning.mp3",
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       checkpointSeconds: 65,
       description:
         "A city scene where people are doing different actions right now.",
