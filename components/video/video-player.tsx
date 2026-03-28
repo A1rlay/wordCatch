@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
@@ -31,6 +32,11 @@ declare global {
 interface YTPlayer {
   getCurrentTime(): number;
   getDuration(): number;
+  getVolume(): number;
+  isMuted(): boolean;
+  mute(): void;
+  unMute(): void;
+  setVolume(volume: number): void;
   pauseVideo(): void;
   playVideo(): void;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
@@ -44,12 +50,6 @@ function extractYouTubeId(url: string): string | null {
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\s]+)/,
   );
   return match?.[1] ?? null;
-}
-
-function formatTime(seconds: number) {
-  const m = Math.floor(seconds / 60).toString().padStart(2, "0");
-  const s = Math.floor(seconds % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
 }
 
 // ─── State types ──────────────────────────────────────────────────────────────
@@ -67,6 +67,7 @@ type SessionResult = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function VideoPlayer({ video }: { video: VideoLesson }) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -81,10 +82,13 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
   const [activeQuestion, setActiveQuestion] = useState<QuizQuestion | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [result, setResult] = useState<SingleAnswerResult | null>(null);
-  // Accumulates one entry per question (keyed by question id, last answer wins on re-watch)
   const [sessionResults, setSessionResults] = useState<Map<string, SessionResult>>(new Map());
 
-  // Sort questions by checkpointSeconds so they trigger in chronological order
+  // Volume / fullscreen state
+  const [volume, setVolume] = useState(100);
+  const [muted, setMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const sortedQuestions = useMemo(
     () => [...video.questions].sort((a, b) => a.checkpointSeconds - b.checkpointSeconds),
     [video.questions],
@@ -139,6 +143,15 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
     }
   }
 
+  // Track fullscreen changes
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(!!document.fullscreenElement);
+    }
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
   useEffect(() => {
     if (!videoId || !containerRef.current) return;
 
@@ -146,8 +159,12 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
       if (!containerRef.current) return;
       playerRef.current = new window.YT.Player(containerRef.current, {
         videoId: videoId!,
-        playerVars: { modestbranding: 1, rel: 0 },
+        playerVars: { controls: 0, disablekb: 1, modestbranding: 1, rel: 0 },
         events: {
+          onReady: (e) => {
+            setVolume(e.target.getVolume());
+            setMuted(e.target.isMuted());
+          },
           onStateChange: (e) => {
             const YTState = window.YT.PlayerState;
             if (e.data === YTState.PLAYING) {
@@ -187,7 +204,6 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
     const idx = activeCheckpointIdxRef.current;
     const prevSeconds =
       idx !== null && idx > 0 ? sortedQuestions[idx - 1].checkpointSeconds : 0;
-    // Roll back so this checkpoint fires again when we reach it
     nextCheckpointIdxRef.current = idx ?? 0;
     playerRef.current?.seekTo(prevSeconds, true);
     playerRef.current?.playVideo();
@@ -203,7 +219,6 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
         onSuccess: (data) => {
           setResult(data);
           setQuizPhase("result");
-          // Record result for end-of-video summary (last answer wins on re-watch)
           setSessionResults((prev) => {
             const next = new Map(prev);
             next.set(activeQuestion.id, {
@@ -230,13 +245,41 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
     }
   }
 
+  function handleVolumeChange(value: number) {
+    setVolume(value);
+    playerRef.current?.setVolume(value);
+    if (value > 0 && muted) {
+      playerRef.current?.unMute();
+      setMuted(false);
+    }
+  }
+
+  function handleToggleMute() {
+    const player = playerRef.current;
+    if (!player) return;
+    if (muted) {
+      player.unMute();
+      setMuted(false);
+    } else {
+      player.mute();
+      setMuted(true);
+    }
+  }
+
+  function handleFullscreen() {
+    if (!document.fullscreenElement) {
+      wrapperRef.current?.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
   const progressPct =
     duration && duration > 0 ? Math.min(100, (currentTime / duration) * 100) : null;
 
   const completedCount = sessionResults.size;
   const totalQuestions = sortedQuestions.length;
 
-  // Summary derived from sessionResults (sorted by question order)
   const summaryResults = useMemo(
     () =>
       [...sessionResults.values()].sort((a, b) => a.question.order - b.question.order),
@@ -254,49 +297,107 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
   }
 
   return (
-    <>
-      {/* YouTube iframe */}
-      <div className="mt-8 overflow-hidden rounded-[28px] border border-[var(--border)] bg-black">
+    <div ref={wrapperRef} className="flex flex-col gap-3">
+      {/* YouTube iframe + overlay */}
+      <div className="overflow-hidden rounded-[28px] border border-[var(--border)] bg-black">
         <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+          {/* iframe */}
           <div ref={containerRef} className="absolute inset-0 h-full w-full" />
+
+          {/* Transparent overlay — blocks all YouTube UI (title, share, more videos, logo) */}
+          <div
+            className="absolute inset-0 z-10 flex items-center justify-center"
+            onClick={() => {
+              if (playerPhase === "playing") {
+                playerRef.current?.pauseVideo();
+              } else if (playerPhase === "paused" || playerPhase === "idle") {
+                playerRef.current?.playVideo();
+              }
+            }}
+          >
+            {(playerPhase === "idle" || playerPhase === "paused") && (
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-transform hover:scale-105">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Controls bar */}
-      <div className="mt-3 rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.1)] px-5 py-4 backdrop-blur-sm">
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-sm font-semibold text-[rgba(255,255,255,0.7)]">
-            {playerPhase === "idle" && "Press play to start"}
-            {playerPhase === "playing" && "Watching…"}
-            {playerPhase === "paused" && "Paused"}
-            {playerPhase === "checkpoint" && "Answer to continue"}
-            {playerPhase === "done" && "Finished"}
-          </p>
-          <div className="flex items-center gap-2 text-xs text-[rgba(255,255,255,0.55)]">
-            <span>{formatTime(currentTime)}</span>
-            {duration && duration > 0 && (
-              <>
-                <span>/</span>
-                <span>{formatTime(duration)}</span>
-              </>
+      <div className="rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.1)] px-5 py-3 backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-3">
+          {/* Progress bar + question counter */}
+          <div className="min-w-0 flex-1">
+            {progressPct !== null && (
+              <div className="h-1 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.15)]">
+                <div
+                  className="h-full rounded-full bg-[#0F9C00] transition-all duration-500"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            )}
+            {totalQuestions > 0 && (
+              <p className="mt-1.5 text-xs text-[rgba(255,255,255,0.55)]">
+                {completedCount} / {totalQuestions} questions answered
+              </p>
             )}
           </div>
-        </div>
 
-        {progressPct !== null && (
-          <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.15)]">
-            <div
-              className="h-full rounded-full bg-[#0F9C00] transition-all duration-500"
-              style={{ width: `${progressPct}%` }}
+          {/* Volume + fullscreen */}
+          <div className="flex shrink-0 items-center gap-3">
+            {/* Mute toggle */}
+            <button
+              onClick={handleToggleMute}
+              className="text-[rgba(255,255,255,0.7)] transition-colors hover:text-white"
+              aria-label={muted ? "Unmute" : "Mute"}
+            >
+              {muted || volume === 0 ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                </svg>
+              ) : volume < 50 ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+              )}
+            </button>
+
+            {/* Volume slider */}
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={muted ? 0 : volume}
+              onChange={(e) => handleVolumeChange(Number(e.target.value))}
+              className="w-20 accent-[#0F9C00]"
+              aria-label="Volume"
             />
-          </div>
-        )}
 
-        {totalQuestions > 0 && (
-          <div className="mt-3 text-xs text-[rgba(255,255,255,0.55)]">
-            {completedCount} / {totalQuestions} answered
+            {/* Fullscreen */}
+            <button
+              onClick={handleFullscreen}
+              className="text-[rgba(255,255,255,0.7)] transition-colors hover:text-white"
+              aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            >
+              {isFullscreen ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                </svg>
+              )}
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Checkpoint modal */}
@@ -478,13 +579,18 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
                 </div>
               </>
             ) : (
-              <p className="mt-4 text-sm text-gray-400">
-                No questions answered.
-              </p>
+              <p className="mt-4 text-sm text-gray-400">No questions answered.</p>
             )}
+
+            <Link
+              href="/topics"
+              className="mt-6 flex items-center justify-center rounded-full bg-[#000D71] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            >
+              ← Back to Topics
+            </Link>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

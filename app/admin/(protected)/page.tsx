@@ -43,14 +43,8 @@ export default async function AdminDashboardPage() {
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
-            href="/admin/topics/new"
-            className="rounded-full bg-[#0F9C00] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-          >
-            New topic
-          </Link>
-          <Link
             href="/admin/topics"
-            className="rounded-full border border-[var(--border)] px-5 py-3 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-[var(--foreground)] hover:text-[var(--foreground)]"
+            className="rounded-full bg-[#0F9C00] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
             Manage topics
           </Link>

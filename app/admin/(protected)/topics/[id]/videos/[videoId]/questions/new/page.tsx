@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { createQuestionAction } from "../actions";
@@ -19,6 +20,15 @@ export default async function NewQuestionPage({ params }: NewQuestionPageProps) 
   return (
     <div className="flex flex-col gap-6">
       <div>
+        <Link
+          href={`/admin/topics/${id}/videos/${videoId}/questions`}
+          className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+        >
+          ← Back
+        </Link>
+      </div>
+
+      <div>
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
           Admin · {video.title}
         </p>
@@ -35,7 +45,7 @@ export default async function NewQuestionPage({ params }: NewQuestionPageProps) 
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-transform duration-200 hover:-translate-y-0.5"
+            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
             Create question
           </button>

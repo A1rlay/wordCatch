@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { updateVideoAction } from "../../actions";
@@ -16,6 +17,15 @@ export default async function EditVideoPage({ params }: EditVideoPageProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <Link
+          href={`/admin/topics/${id}/videos`}
+          className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+        >
+          ← Back
+        </Link>
+      </div>
+
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
           Admin · {video.topic.title}

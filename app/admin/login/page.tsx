@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { loginAction } from "./actions";
 
 type LoginPageProps = {
@@ -13,6 +15,12 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
+        <Link
+          href="/"
+          className="mb-6 flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+        >
+          ← Back
+        </Link>
         <div className="rounded-3xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.08)] p-8 backdrop-blur-sm">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#0F9C00]">
             Admin

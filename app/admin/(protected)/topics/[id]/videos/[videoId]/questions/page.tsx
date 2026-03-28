@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DeleteButton } from "@/components/admin/delete-button";
 import { deleteQuestionAction } from "./actions";
 import { adminGetVideo } from "@/server/data/admin";
 
@@ -15,6 +16,15 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <Link
+          href={`/admin/topics/${id}/videos`}
+          className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+        >
+          ← Back
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
@@ -70,16 +80,10 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
                   >
                     Edit
                   </Link>
-                  <form
+                  <DeleteButton
                     action={deleteQuestionAction.bind(null, id, videoId, question.id)}
-                  >
-                    <button
-                      type="submit"
-                      className="rounded-full border border-red-200 px-4 py-2 text-xs font-semibold text-red-500 transition-colors hover:border-red-400 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
-                  </form>
+                    label={`question ${question.order}`}
+                  />
                 </div>
               </div>
             </div>
