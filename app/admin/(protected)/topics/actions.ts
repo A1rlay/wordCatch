@@ -24,6 +24,7 @@ export async function createTopicAction(formData: FormData) {
 
   await adminCreateTopic({ title, description, level, tags });
   revalidatePath("/admin/topics");
+  revalidatePath("/topics");
   redirect("/admin/topics");
 }
 
@@ -35,11 +36,13 @@ export async function updateTopicAction(id: string, formData: FormData) {
 
   await adminUpdateTopic(id, { title, description, level, tags });
   revalidatePath("/admin/topics");
+  revalidatePath("/topics");
   redirect("/admin/topics");
 }
 
 export async function deleteTopicAction(id: string) {
   await adminDeleteTopic(id);
   revalidatePath("/admin/topics");
+  revalidatePath("/topics");
   redirect("/admin/topics");
 }

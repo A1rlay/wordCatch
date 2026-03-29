@@ -18,6 +18,7 @@ export async function createVideoAction(topicId: string, formData: FormData) {
   await adminCreateVideo({ description, order, title, topicId, videoUrl });
 
   revalidatePath(`/admin/topics/${topicId}/videos`);
+  revalidatePath("/topics");
   redirect(`/admin/topics/${topicId}/videos`);
 }
 
@@ -34,11 +35,13 @@ export async function updateVideoAction(
   await adminUpdateVideo(videoId, { description, order, title, videoUrl });
 
   revalidatePath(`/admin/topics/${topicId}/videos`);
+  revalidatePath("/topics");
   redirect(`/admin/topics/${topicId}/videos`);
 }
 
 export async function deleteVideoAction(topicId: string, videoId: string) {
   await adminDeleteVideo(videoId);
   revalidatePath(`/admin/topics/${topicId}/videos`);
+  revalidatePath("/topics");
   redirect(`/admin/topics/${topicId}/videos`);
 }
